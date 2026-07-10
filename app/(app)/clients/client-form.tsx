@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ZipAddressSearch } from "@/components/zip-address-search";
 import {
   createClientAction,
   updateClientAction,
@@ -104,12 +105,19 @@ export function ClientForm({ client }: { client?: ClientLike }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="zip">郵便番号</Label>
-            <Input id="zip" name="zip" defaultValue={client?.zip ?? ""} placeholder="100-0001" />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="email">メールアドレス</Label>
             <Input id="email" name="email" type="email" defaultValue={client?.email ?? ""} />
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="zip">郵便番号</Label>
+            <ZipAddressSearch
+              id="zip"
+              name="zip"
+              defaultValue={client?.zip ?? ""}
+              addressInputId="address"
+              className="max-w-xs"
+            />
           </div>
 
           <div className="space-y-2 sm:col-span-2">

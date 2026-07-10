@@ -24,6 +24,17 @@ export async function updateCompanyAction(
   const name = str(formData.get("name"));
   if (!name) return { error: "お名前を入力してください" };
 
+  // 角印画像（クライアントで縮小済みの data URL）
+  const sealImage = str(formData.get("sealImage"));
+  if (sealImage) {
+    if (!sealImage.startsWith("data:image/")) {
+      return { error: "角印画像の形式が正しくありません" };
+    }
+    if (sealImage.length > 400_000) {
+      return { error: "角印画像が大きすぎます（約300KBまで）" };
+    }
+  }
+
   await prisma.user.update({
     where: { id: session.userId },
     data: {
@@ -37,6 +48,7 @@ export async function updateCompanyAction(
       invoiceRegNo: str(formData.get("invoiceRegNo")),
       bankInfo: str(formData.get("bankInfo")),
       sealText: str(formData.get("sealText")),
+      sealImage,
     },
   });
 

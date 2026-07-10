@@ -38,6 +38,7 @@ interface Company {
   invoiceRegNo: string | null;
   bankInfo: string | null;
   sealText: string | null;
+  sealImage: string | null;
 }
 
 export function InvoiceSheet({
@@ -97,12 +98,20 @@ export function InvoiceSheet({
             )}
           </div>
 
-          {/* 角印 */}
-          {company.sealText && (
+          {/* 角印（画像優先、なければテキスト） */}
+          {company.sealImage ? (
+            // data URL の印影画像（サイズ最適化不要のため素の img を使用）
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={company.sealImage}
+              alt=""
+              className="absolute right-0 top-8 h-16 w-16 object-contain"
+            />
+          ) : company.sealText ? (
             <div className="absolute right-0 top-8 flex h-16 w-16 rotate-6 items-center justify-center rounded border-2 border-red-500/70 p-1 text-center text-[10px] font-bold leading-tight text-red-500/80">
               {company.sealText}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 

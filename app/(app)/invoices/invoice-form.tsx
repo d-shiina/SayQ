@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/select";
 import { formatYen } from "@/lib/utils";
 import { calcTotals, type TaxRounding } from "@/lib/invoice-calc";
+import { DatePicker } from "@/components/date-picker";
+import { MonthPicker } from "@/components/month-picker";
 import {
   createInvoiceAction,
   updateInvoiceAction,
@@ -248,30 +250,23 @@ export function InvoiceForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="billingMonth">対象月</Label>
-              <Input
-                id="billingMonth"
+              <Label>対象月</Label>
+              <MonthPicker
                 name="billingMonth"
-                type="month"
                 defaultValue={defaults.billingMonth}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="issueDate">発行日</Label>
-              <Input
-                id="issueDate"
-                name="issueDate"
-                type="date"
-                defaultValue={defaults.issueDate}
-              />
+              <Label>発行日</Label>
+              <DatePicker name="issueDate" defaultValue={defaults.issueDate} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dueDate">お支払い期限</Label>
-              <Input
-                id="dueDate"
+              <Label>お支払い期限</Label>
+              <DatePicker
                 name="dueDate"
-                type="date"
                 defaultValue={defaults.dueDate}
+                placeholder="期限を選択（任意）"
+                clearable
               />
             </div>
             <div className="space-y-2">

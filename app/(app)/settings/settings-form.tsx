@@ -15,6 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ZipAddressSearch } from "@/components/zip-address-search";
+import { SealImageField } from "@/components/seal-image-field";
 import { updateCompanyAction, type SettingsState } from "./actions";
 
 type UserLike = {
@@ -28,6 +30,7 @@ type UserLike = {
   invoiceRegNo: string | null;
   bankInfo: string | null;
   sealText: string | null;
+  sealImage: string | null;
 };
 
 function SaveButton() {
@@ -97,8 +100,16 @@ export function SettingsForm({ user }: { user: UserLike }) {
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <Field id="companyName" label="会社名・屋号" defaultValue={user.companyName} />
           <Field id="name" label="担当者名・代表者名" defaultValue={user.name} required />
-          <Field id="companyZip" label="郵便番号" defaultValue={user.companyZip} placeholder="150-0001" />
-          <div className="hidden sm:block" />
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="companyZip">郵便番号</Label>
+            <ZipAddressSearch
+              id="companyZip"
+              name="companyZip"
+              defaultValue={user.companyZip ?? ""}
+              addressInputId="companyAddress"
+              className="max-w-xs"
+            />
+          </div>
           <Field
             id="companyAddress"
             label="住所"
@@ -145,12 +156,27 @@ export function SettingsForm({ user }: { user: UserLike }) {
               帳票の下部に表示されます（改行可）
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>角印</CardTitle>
+          <CardDescription>
+            請求書の右上に表示される印影を設定します
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>角印画像</Label>
+            <SealImageField defaultValue={user.sealImage} />
+          </div>
           <Field
             id="sealText"
             label="角印テキスト"
             defaultValue={user.sealText}
             placeholder="サンプル"
-            hint="請求書右上に朱色の角印風で表示（任意・最大4文字程度）"
+            hint="画像を設定しない場合、このテキストが朱色の角印風に表示されます（最大4文字程度）"
           />
         </CardContent>
       </Card>

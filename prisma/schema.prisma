@@ -28,7 +28,8 @@ model User {
   companyEmail   String?
   invoiceRegNo   String? // インボイス制度 登録番号 (例: T1234567890123)
   bankInfo       String? // 振込先（銀行/支店/種別/口座番号/名義）
-  sealText       String? // 角印代わりの表示テキスト
+  sealText       String? // 角印代わりの表示テキスト（画像未設定時のフォールバック）
+  sealImage      String? // 角印画像 (data URL、クライアントで縮小済み)
 
   clients  Client[]
   invoices Invoice[]
