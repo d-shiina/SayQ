@@ -21,95 +21,134 @@ Font.register({
   ],
 });
 // CJKはどこでも改行できるように1文字ずつに分割。
-// 各文字の後ろに空文字を挟むことで、行分割時のハイフン自動挿入を抑止する
-Font.registerHyphenationCallback((word) =>
-  Array.from(word).flatMap((char) => [char, ""]),
-);
+// - 行頭に来てはいけない文字（閉じ括弧・句読点など）は前の文字と結合（簡易禁則処理）
+// - 各フラグメントの後ろに空文字を挟み、行分割時のハイフン自動挿入を抑止する
+const NO_BREAK_BEFORE = "、。，．）」』】〕｝〉》・ー！？!?:：;；%％円";
+Font.registerHyphenationCallback((word) => {
+  const fragments: string[] = [];
+  for (const char of Array.from(word)) {
+    if (fragments.length > 0 && NO_BREAK_BEFORE.includes(char)) {
+      fragments[fragments.length - 1] += char;
+    } else {
+      fragments.push(char);
+    }
+  }
+  return fragments.flatMap((f) => [f, ""]);
+});
 
-const BORDER = "#333333";
+// モノトーンパレット
+const INK = "#1a1a1a"; // 基本の文字・外枠
+const SUB = "#555555"; // 補助テキスト
+const LINE = "#c8c8c8"; // 明細の内側罫線
+const HEAD_BG = "#222222"; // 表ヘッダー（ダーク反転）
+const SOFT_BG = "#f4f4f4"; // 備考などの淡い面
 
 const styles = StyleSheet.create({
   page: {
     fontFamily: "NotoSansJP",
     fontSize: 9,
-    color: "#111111",
-    paddingTop: 40,
-    paddingBottom: 46,
-    paddingHorizontal: 44,
+    color: INK,
+    paddingTop: 42,
+    paddingBottom: 48,
+    paddingHorizontal: 46,
     lineHeight: 1.45,
   },
   title: {
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 700,
-    letterSpacing: 10,
-    marginBottom: 26,
+    letterSpacing: 12,
   },
-  // 上段: 宛先(左) / メタ+発行元(右)
+  // タイトル下の飾り罫（細線 + 太線の二重線）
+  ruleThin: {
+    marginTop: 10,
+    borderBottomWidth: 0.7,
+    borderBottomColor: INK,
+  },
+  ruleThick: {
+    marginTop: 1.6,
+    borderBottomWidth: 2.4,
+    borderBottomColor: INK,
+    marginBottom: 24,
+  },
   topRow: { flexDirection: "row", justifyContent: "space-between" },
-  clientName: { fontSize: 12.5, marginBottom: 4 },
-  clientSub: { fontSize: 9, color: "#222222" },
-  metaRow: { flexDirection: "row", marginBottom: 3 },
-  metaLabel: { width: 64, color: "#333333" },
-  metaValue: { flexGrow: 1, textAlign: "right" },
-  issuerName: { fontSize: 12, marginBottom: 6, marginTop: 26 },
-  greeting: { marginTop: 22, marginBottom: 10 },
-  subjectRow: { flexDirection: "row", alignItems: "baseline", marginBottom: 12 },
-  subjectLabel: { width: 64, fontSize: 10 },
+  clientName: {
+    fontSize: 13,
+    paddingBottom: 4,
+    marginBottom: 6,
+    borderBottomWidth: 0.7,
+    borderBottomColor: INK,
+  },
+  clientSub: { fontSize: 9, color: SUB },
+  greeting: { marginTop: 20, marginBottom: 10 },
+  subjectRow: { flexDirection: "row", alignItems: "baseline" },
+  subjectLabel: { width: 56, fontSize: 10 },
   subjectValue: { fontSize: 11.5, fontWeight: 700 },
-  // 集計表 (小計/消費税/請求金額)
-  table: { borderWidth: 1, borderColor: BORDER },
+  metaRow: { flexDirection: "row", marginBottom: 2.5 },
+  metaLabel: { width: 62, color: SUB },
+  metaValue: { flexGrow: 1, textAlign: "right" },
+  issuerBlock: { position: "relative", marginTop: 22 },
+  issuerName: { fontSize: 12, fontWeight: 700, marginBottom: 4 },
+  issuerText: { fontSize: 8.5, color: SUB, lineHeight: 1.5 },
+  // 表の共通
+  table: { borderWidth: 1, borderColor: INK },
   row: { flexDirection: "row" },
-  th: {
-    backgroundColor: "#ffffff",
-    paddingVertical: 4,
+  darkTh: {
+    backgroundColor: HEAD_BG,
+    color: "#ffffff",
+    paddingVertical: 4.5,
     paddingHorizontal: 6,
     textAlign: "center",
     fontSize: 8.5,
+    letterSpacing: 1,
   },
-  td: { paddingVertical: 5, paddingHorizontal: 8 },
-  borderR: { borderRightWidth: 1, borderRightColor: BORDER },
-  borderB: { borderBottomWidth: 1, borderBottomColor: BORDER },
-  amountBig: { fontSize: 16, fontWeight: 700, textAlign: "right" },
+  cellDivider: { borderRightWidth: 0.7, borderRightColor: LINE },
+  darkDivider: { borderRightWidth: 0.7, borderRightColor: "#555555" },
+  valueCell: {
+    justifyContent: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    minHeight: 30,
+  },
+  amountBig: {
+    fontSize: 15,
+    fontWeight: 700,
+    textAlign: "right",
+    lineHeight: 1.2,
+  },
   // 明細表
-  itemHead: {
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    textAlign: "center",
-    fontSize: 8.5,
-  },
   itemCell: { paddingVertical: 4.5, paddingHorizontal: 6, fontSize: 9 },
   right: { textAlign: "right" },
   center: { textAlign: "center" },
   // 内訳
   breakdownBox: {
     alignSelf: "flex-end",
-    width: 250,
-    borderWidth: 1,
-    borderColor: BORDER,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    width: 240,
+    borderWidth: 0.7,
+    borderColor: INK,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
     marginTop: 14,
   },
   breakdownRow: { flexDirection: "row", justifyContent: "space-between" },
   // 備考
   notesBox: {
-    borderWidth: 1,
-    borderColor: BORDER,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginTop: 16,
+    backgroundColor: SOFT_BG,
+    borderRadius: 3,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    marginTop: 18,
   },
   pageNo: {
     position: "absolute",
-    bottom: 22,
+    bottom: 24,
     left: 0,
     right: 0,
     textAlign: "center",
-    fontSize: 9,
-    color: "#333333",
+    fontSize: 8,
+    color: SUB,
   },
-  seal: { position: "absolute", top: -6, right: 0, width: 52, height: 52 },
+  seal: { position: "absolute", top: -4, right: 0, width: 48, height: 48 },
 });
 
 export interface PdfInvoiceData {
@@ -153,38 +192,41 @@ export interface PdfInvoiceData {
 
 const yen = (n: number) => `${formatNumber(Math.round(n))}円`;
 
-const MIN_ROWS = 12;
+const MIN_ROWS = 10;
+
+// 集計表・入金期日表の幅
+const SUMMARY_WIDTH = "57%";
 
 export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
   const totals = calcTotals(data.items, data.taxRounding as TaxRounding);
   const issuerName = data.company.companyName || data.company.name;
-  const subject =
-    data.subject || `${formatBillingMonth(data.billingMonth)}分`;
+  const subject = data.subject || `${formatBillingMonth(data.billingMonth)}分`;
   const fillerCount = Math.max(0, MIN_ROWS - data.items.length);
   const hasReduced = data.items.some((it) => it.taxRate === 8);
 
-  // 明細表の列幅
   const col = { desc: "52%", qty: "13%", price: "16%", amount: "19%" } as const;
 
   return (
     <Document
-      title={`請求書 ${data.invoiceNo}`}
+      title={`${data.title} ${data.invoiceNo}`}
       author={issuerName}
       creator="SayQ"
       producer="SayQ"
     >
       <Page size="A4" style={styles.page}>
-        <Text style={styles.title}>請求書</Text>
+        {/* タイトル（例: 御請求書） */}
+        <Text style={styles.title}>{data.title}</Text>
+        <View style={styles.ruleThin} />
+        <View style={styles.ruleThick} />
 
-        {/* 上段 */}
+        {/* 上段: 宛先(左) / メタ+発行元(右) */}
         <View style={styles.topRow}>
-          {/* 宛先（左） */}
-          <View style={{ width: "52%" }}>
+          <View style={{ width: "55%" }}>
             <Text style={styles.clientName}>
-              {data.client.name} {data.client.honorific}
+              {data.client.name}　{data.client.honorific}
             </Text>
             {data.client.zip && (
-              <Text style={styles.clientSub}>{data.client.zip}</Text>
+              <Text style={styles.clientSub}>〒{data.client.zip}</Text>
             )}
             {data.client.address && (
               <Text style={styles.clientSub}>{data.client.address}</Text>
@@ -205,8 +247,8 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
             </View>
           </View>
 
-          {/* メタ + 発行元（右） */}
-          <View style={{ width: "40%", position: "relative" }}>
+          {/* 右カラムは狭め＆右寄せ配置で、左の金額表と間隔を確保する */}
+          <View style={{ width: "32%", position: "relative" }}>
             <View style={styles.metaRow}>
               <Text style={styles.metaLabel}>請求日</Text>
               <Text style={styles.metaValue}>
@@ -218,31 +260,40 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
               <Text style={styles.metaValue}>{data.invoiceNo}</Text>
             </View>
 
-            <View style={{ position: "relative" }}>
+            <View style={styles.issuerBlock}>
               <Text style={styles.issuerName}>{issuerName}</Text>
               {data.company.companyZip && (
-                <Text>{data.company.companyZip}</Text>
+                <Text style={styles.issuerText}>
+                  〒{data.company.companyZip}
+                </Text>
               )}
               {data.company.companyAddress && (
-                <Text>
+                <Text style={styles.issuerText}>
                   {data.company.companyAddress}
-                  {data.company.companyBuilding
-                    ? data.company.companyBuilding
-                    : ""}
+                </Text>
+              )}
+              {data.company.companyBuilding && (
+                <Text style={styles.issuerText}>
+                  {data.company.companyBuilding}
                 </Text>
               )}
               {data.company.companyTel && (
-                <Text>TEL: {data.company.companyTel}</Text>
+                <Text style={styles.issuerText}>
+                  TEL: {data.company.companyTel}
+                </Text>
               )}
               {data.company.companyEmail && (
-                <Text>{data.company.companyEmail}</Text>
+                <Text style={styles.issuerText}>
+                  {data.company.companyEmail}
+                </Text>
               )}
               {data.company.invoiceRegNo && (
-                <Text style={{ marginTop: 3 }}>
+                <Text style={[styles.issuerText, { marginTop: 3, color: INK }]}>
                   登録番号: {data.company.invoiceRegNo}
                 </Text>
               )}
-              {/* 角印 */}
+
+              {/* 角印（発行元名の右横に重ねる） */}
               {data.company.sealImage ? (
                 // eslint-disable-next-line jsx-a11y/alt-text
                 <Image src={data.company.sealImage} style={styles.seal} />
@@ -252,7 +303,7 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
                     styles.seal,
                     {
                       borderWidth: 2,
-                      borderColor: "#dd3333",
+                      borderColor: "#cc3333",
                       alignItems: "center",
                       justifyContent: "center",
                       transform: "rotate(6deg)",
@@ -261,7 +312,7 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
                 >
                   <Text
                     style={{
-                      color: "#dd3333",
+                      color: "#cc3333",
                       fontSize: 8,
                       fontWeight: 700,
                       textAlign: "center",
@@ -276,79 +327,76 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
         </View>
 
         {/* 集計表: 小計 / 消費税 / 請求金額 */}
-        <View style={[styles.table, { width: "62%" }]}>
-          <View style={[styles.row, styles.borderB]}>
-            <Text style={[styles.th, styles.borderR, { width: "29%" }]}>
+        <View style={[styles.table, { width: SUMMARY_WIDTH, marginTop: 14 }]}>
+          <View style={styles.row}>
+            <Text style={[styles.darkTh, styles.darkDivider, { width: "28%" }]}>
               小計
             </Text>
-            <Text style={[styles.th, styles.borderR, { width: "25%" }]}>
+            <Text style={[styles.darkTh, styles.darkDivider, { width: "26%" }]}>
               消費税
             </Text>
-            <Text style={[styles.th, { width: "46%" }]}>請求金額</Text>
+            <Text style={[styles.darkTh, { width: "46%" }]}>請求金額</Text>
           </View>
           <View style={styles.row}>
-            <Text
-              style={[styles.td, styles.right, styles.borderR, { width: "29%" }]}
-            >
-              {yen(totals.subtotal)}
-            </Text>
-            <Text
-              style={[styles.td, styles.right, styles.borderR, { width: "25%" }]}
-            >
-              {yen(totals.totalTax)}
-            </Text>
-            <Text style={[styles.td, styles.amountBig, { width: "46%" }]}>
-              {yen(totals.total)}
-            </Text>
+            <View style={[styles.valueCell, styles.cellDivider, { width: "28%" }]}>
+              <Text style={styles.right}>{yen(totals.subtotal)}</Text>
+            </View>
+            <View style={[styles.valueCell, styles.cellDivider, { width: "26%" }]}>
+              <Text style={styles.right}>{yen(totals.totalTax)}</Text>
+            </View>
+            <View style={[styles.valueCell, { width: "46%" }]}>
+              <Text style={styles.amountBig}>{yen(totals.total)}</Text>
+            </View>
           </View>
         </View>
 
         {/* 入金期日 / 振込先 */}
-        <View style={[styles.table, { width: "62%", marginTop: 10 }]}>
-          <View style={[styles.row, styles.borderB]}>
-            <Text style={[styles.th, styles.borderR, { width: "29%" }]}>
+        <View style={[styles.table, { width: SUMMARY_WIDTH, marginTop: 10 }]}>
+          <View style={styles.row}>
+            <Text style={[styles.darkTh, styles.darkDivider, { width: "28%" }]}>
               入金期日
             </Text>
-            <Text style={[styles.th, { width: "71%" }]}>振込先</Text>
+            <Text style={[styles.darkTh, { width: "72%" }]}>振込先</Text>
           </View>
           <View style={styles.row}>
-            <Text
-              style={[
-                styles.td,
-                styles.center,
-                styles.borderR,
-                { width: "29%" },
-              ]}
-            >
-              {data.dueDate ? formatDateJa(data.dueDate) : "—"}
-            </Text>
-            <Text style={[styles.td, { width: "71%", fontSize: 8.5 }]}>
-              {data.company.bankInfo?.replace(/\n/g, "　") ?? "—"}
-            </Text>
+            <View style={[styles.valueCell, styles.cellDivider, { width: "28%" }]}>
+              <Text style={styles.center}>
+                {data.dueDate ? formatDateJa(data.dueDate) : "—"}
+              </Text>
+            </View>
+            <View style={[styles.valueCell, { width: "72%" }]}>
+              <Text style={{ fontSize: 8.5 }}>
+                {data.company.bankInfo?.replace(/\n/g, "　") ?? "—"}
+              </Text>
+            </View>
           </View>
         </View>
 
         {/* 明細表 */}
-        <View style={[styles.table, { marginTop: 22 }]}>
-          <View style={[styles.row, styles.borderB]}>
-            <Text style={[styles.itemHead, styles.borderR, { width: col.desc }]}>
+        <View style={[styles.table, { marginTop: 24 }]}>
+          <View style={styles.row}>
+            <Text style={[styles.darkTh, styles.darkDivider, { width: col.desc }]}>
               摘要
             </Text>
-            <Text style={[styles.itemHead, styles.borderR, { width: col.qty }]}>
+            <Text style={[styles.darkTh, styles.darkDivider, { width: col.qty }]}>
               数量
             </Text>
             <Text
-              style={[styles.itemHead, styles.borderR, { width: col.price }]}
+              style={[styles.darkTh, styles.darkDivider, { width: col.price }]}
             >
               単価
             </Text>
-            <Text style={[styles.itemHead, { width: col.amount }]}>
-              明細金額
-            </Text>
+            <Text style={[styles.darkTh, { width: col.amount }]}>明細金額</Text>
           </View>
           {data.items.map((it, i) => (
-            <View key={i} style={[styles.row, styles.borderB]}>
-              <Text style={[styles.itemCell, styles.borderR, { width: col.desc }]}>
+            <View
+              key={i}
+              style={[
+                styles.row,
+                { borderBottomWidth: 0.7, borderBottomColor: LINE },
+              ]}
+            >
+              <Text style={[styles.itemCell, styles.cellDivider, { width: col.desc }]}>
                 {it.name}
                 {hasReduced && it.taxRate === 8 ? " ※" : ""}
               </Text>
@@ -356,7 +404,7 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
                 style={[
                   styles.itemCell,
                   styles.center,
-                  styles.borderR,
+                  styles.cellDivider,
                   { width: col.qty },
                 ]}
               >
@@ -367,7 +415,7 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
                 style={[
                   styles.itemCell,
                   styles.right,
-                  styles.borderR,
+                  styles.cellDivider,
                   { width: col.price },
                 ]}
               >
@@ -381,21 +429,26 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
           {Array.from({ length: fillerCount }).map((_, i) => (
             <View
               key={`f-${i}`}
-              style={[styles.row, i < fillerCount - 1 ? styles.borderB : {}]}
+              style={[
+                styles.row,
+                i < fillerCount - 1
+                  ? { borderBottomWidth: 0.7, borderBottomColor: LINE }
+                  : {},
+              ]}
             >
-              <Text style={[styles.itemCell, styles.borderR, { width: col.desc }]}>
+              <Text style={[styles.itemCell, styles.cellDivider, { width: col.desc }]}>
                 {" "}
               </Text>
-              <Text style={[styles.itemCell, styles.borderR, { width: col.qty }]} />
+              <Text style={[styles.itemCell, styles.cellDivider, { width: col.qty }]} />
               <Text
-                style={[styles.itemCell, styles.borderR, { width: col.price }]}
+                style={[styles.itemCell, styles.cellDivider, { width: col.price }]}
               />
               <Text style={[styles.itemCell, { width: col.amount }]} />
             </View>
           ))}
         </View>
         {hasReduced && (
-          <Text style={{ fontSize: 8, marginTop: 4, color: "#333333" }}>
+          <Text style={{ fontSize: 8, marginTop: 4, color: SUB }}>
             ※は軽減税率(8%)対象
           </Text>
         )}
@@ -413,12 +466,10 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
               </View>
               {t.rate > 0 && (
                 <View style={[styles.breakdownRow, { marginTop: 1 }]}>
-                  <Text style={{ fontSize: 8, color: "#333333" }}>
+                  <Text style={{ fontSize: 8, color: SUB }}>
                     　　　{t.rate}%消費税
                   </Text>
-                  <Text style={{ fontSize: 8, color: "#333333" }}>
-                    {yen(t.tax)}
-                  </Text>
+                  <Text style={{ fontSize: 8, color: SUB }}>{yen(t.tax)}</Text>
                 </View>
               )}
             </View>
@@ -428,7 +479,9 @@ export function InvoicePdf({ data }: { data: PdfInvoiceData }) {
         {/* 備考 */}
         {data.notes && (
           <View style={styles.notesBox}>
-            <Text style={{ fontSize: 8.5, marginBottom: 3 }}>備考</Text>
+            <Text style={{ fontSize: 8.5, fontWeight: 700, marginBottom: 3 }}>
+              備考
+            </Text>
             <Text style={{ fontSize: 9 }}>{data.notes}</Text>
           </View>
         )}
