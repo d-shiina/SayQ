@@ -1,0 +1,101 @@
+// Prisma schema for SayQ — 毎月の請求書作成ツール
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ユーザー（＝発行者。自社情報も保持）
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  name     String
+  password String
+
+  // 自社情報（請求書の発行元として帳票に印字）
+  companyName    String?
+  companyZip     String?
+  companyAddress String?
+  companyBuilding String?
+  companyTel     String?
+  companyEmail   String?
+  invoiceRegNo   String? // インボイス制度 登録番号 (例: T1234567890123)
+  bankInfo       String? // 振込先（銀行/支店/種別/口座番号/名義）
+  sealText       String? // 角印代わりの表示テキスト
+
+  clients  Client[]
+  invoices Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 取引先（請求先）
+model Client {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String  // 取引先名
+  honorific String  @default("御中") // 御中 / 様
+  contact   String? // 担当者名
+  zip       String?
+  address   String?
+  building  String?
+  tel       String?
+  email     String?
+  note      String?
+
+  invoices  Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// 請求書
+model Invoice {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId  String
+  client    Client  @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  invoiceNo    String   // 請求書番号
+  title        String   @default("御請求書")
+  billingMonth String   // 対象月 (YYYY-MM) — 毎月の請求書用
+  issueDate    DateTime // 発行日
+  dueDate      DateTime? // お支払い期限
+  notes        String?  // 備考
+  status       String   @default("draft") // draft / sent / paid
+  taxRounding  String   @default("floor")  // floor / round / ceil (消費税端数処理)
+
+  items InvoiceItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([billingMonth])
+}
+
+// 請求明細
+model InvoiceItem {
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  name      String  // 品目
+  quantity  Float   @default(1)
+  unit      String? // 単位（式・個・時間など）
+  unitPrice Float   @default(0)
+  taxRate   Int     @default(10) // 10 / 8 / 0 (%)
+  sortOrder Int     @default(0)
+
+  @@index([invoiceId])
+}
