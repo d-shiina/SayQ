@@ -23,6 +23,8 @@ async function launchBrowser() {
   // Vercel等のサーバーレス環境: Lambda向けChromiumを使用
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
     const chromium = (await import("@sparticuz/chromium")).default;
+    // テキスト中心のページなのでWebGLを無効化（サーバーレスでの安定性向上）
+    chromium.setGraphicsMode = false;
     return puppeteer.launch({
       executablePath: await chromium.executablePath(),
       headless: true,
@@ -65,23 +67,29 @@ export async function GET(
     (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
   const origin = `${proto}://${host}`;
 
-  const browser = await launchBrowser();
   let pdf: Uint8Array;
   try {
-    const page = await browser.newPage();
-    // セッションCookieを引き継いで認証済みページとして描画
-    await page.setCookie({ name: COOKIE_NAME, value: token, url: origin });
-    await page.goto(`${origin}/print/invoices/${invoice.id}`, {
-      waitUntil: "networkidle0",
-      timeout: 30_000,
-    });
-    pdf = await page.pdf({
-      format: "a4",
-      printBackground: true,
-      preferCSSPageSize: true,
-    });
-  } finally {
-    await browser.close();
+    const browser = await launchBrowser();
+    try {
+      const page = await browser.newPage();
+      // セッションCookieを引き継いで認証済みページとして描画
+      await page.setCookie({ name: COOKIE_NAME, value: token, url: origin });
+      await page.goto(`${origin}/print/invoices/${invoice.id}`, {
+        waitUntil: "networkidle0",
+        timeout: 30_000,
+      });
+      pdf = await page.pdf({
+        format: "a4",
+        printBackground: true,
+        preferCSSPageSize: true,
+      });
+    } finally {
+      await browser.close();
+    }
+  } catch (e) {
+    console.error("[pdf] 生成に失敗:", e);
+    const message = e instanceof Error ? e.message : String(e);
+    return new Response(`PDF生成エラー: ${message}`, { status: 500 });
   }
 
   // 例: 御請求書_INV-202607-001.pdf（番号が既に INV- で始まる場合は重複させない）
@@ -94,7 +102,8 @@ export async function GET(
   return new Response(new Uint8Array(pdf), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `${download ? "attachment" : "inline"}; filename*=UTF-8''${encoded}`,
+      // ASCIIの filename はSafari等のフォールバック用。対応ブラウザは filename* を優先する
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="invoice_${no}.pdf"; filename*=UTF-8''${encoded}`,
       "Cache-Control": "no-store",
     },
   });

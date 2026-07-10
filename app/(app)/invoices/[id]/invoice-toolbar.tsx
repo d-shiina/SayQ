@@ -2,8 +2,9 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { Pencil, Download, Copy, Trash2 } from "lucide-react";
+import { Pencil, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PdfDownloadButton } from "@/components/pdf-download-button";
 import {
   Select,
   SelectContent,
@@ -20,9 +21,11 @@ import {
 export function InvoiceToolbar({
   id,
   status,
+  invoiceNo,
 }: {
   id: string;
   status: string;
+  invoiceNo: string;
 }) {
   const statusFormRef = useRef<HTMLFormElement>(null);
 
@@ -92,12 +95,7 @@ export function InvoiceToolbar({
             削除
           </Button>
         </form>
-        <Button asChild size="sm">
-          <a href={`/invoices/${id}/pdf?dl=1`}>
-            <Download className="h-4 w-4" />
-            PDFダウンロード
-          </a>
-        </Button>
+        <PdfDownloadButton id={id} invoiceNo={invoiceNo} />
       </div>
     </div>
   );

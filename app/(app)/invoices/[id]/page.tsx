@@ -37,7 +37,11 @@ export default async function InvoiceDetailPage({
         </Link>
       </div>
 
-      <InvoiceToolbar id={invoice.id} status={invoice.status} />
+      <InvoiceToolbar
+        id={invoice.id}
+        status={invoice.status}
+        invoiceNo={invoice.invoiceNo}
+      />
 
       {/* 埋め込みプレビュー（PDFと同一のコンポーネントを縮小表示） */}
       <div className="overflow-hidden rounded-xl border shadow-sm">
