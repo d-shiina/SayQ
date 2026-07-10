@@ -45,7 +45,11 @@ export async function GET(
     />,
   );
 
-  const filename = `請求書_${invoice.invoiceNo}.pdf`;
+  // 例: 御請求書_INV-202607-001.pdf（番号が既に INV- で始まる場合は重複させない）
+  const no = invoice.invoiceNo.startsWith("INV-")
+    ? invoice.invoiceNo
+    : `INV-${invoice.invoiceNo}`;
+  const filename = `御請求書_${no}.pdf`;
   const encoded = encodeURIComponent(filename);
   const download = req.nextUrl.searchParams.get("dl") === "1";
 
