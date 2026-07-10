@@ -41,6 +41,7 @@ export default async function EditInvoicePage({
           clientId: invoice.clientId,
           invoiceNo: invoice.invoiceNo,
           title: invoice.title,
+          subject: invoice.subject ?? "",
           billingMonth: invoice.billingMonth,
           issueDate: toDateInput(invoice.issueDate),
           dueDate: toDateInput(invoice.dueDate),

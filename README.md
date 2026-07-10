@@ -10,7 +10,7 @@ freee のような「帳票 + フォーム」で、毎月の請求書をかん�
 - 👥 **取引先管理** — 請求先の登録・編集・削除
 - 📮 **郵便番号から住所検索** — 郵便番号を入れるだけで住所を自動入力（zipcloud API）
 - 🧾 **請求書作成フォーム** — 明細の動的追加、数量 × 単価の自動計算、税率（10% / 8% / 非課税）対応、消費税の端数処理（切り捨て / 四捨五入 / 切り上げ）、モダンなカレンダー UI（react-day-picker）
-- 📄 **帳票プレビュー** — freee ライクな A4 レイアウト。ブラウザの印刷機能でそのまま **PDF 出力**
+- 📄 **PDF発行** — サーバーサイドで請求書PDFを生成してダウンロード（freee/Misoca風の帳票レイアウト、Noto Sans JP埋め込み）。ブラウザ印刷ではないため **iOSでもURL・ページ番号のフッターが付かない**
 - 📊 **ダッシュボード** — 今月の請求額 / 未入金合計 / 最近の請求書
 - 🗂 **ステータス管理** — 下書き / 送付済み / 入金済み、対象月フィルタ、複製（翌月請求に便利）
 
@@ -19,6 +19,7 @@ freee のような「帳票 + フォーム」で、毎月の請求書をかん�
 | 領域 | 採用技術 |
 | --- | --- |
 | フレームワーク | Next.js 16 (App Router) / React 19 / TypeScript |
+| PDF生成 | @react-pdf/renderer + Noto Sans JP（サーバーサイド） |
 | UI | Tailwind CSS + shadcn/ui スタイルのコンポーネント |
 | DB / ORM | Prisma + PostgreSQL（Neon 推奨） |
 | 認証 | 自前のセッション（`jose` による JWT + `bcryptjs`） |
@@ -56,8 +57,8 @@ npm run dev
 1. `/register` からアカウントを作成
 2. **自社情報設定** で会社名・住所・振込先などを入力
 3. **取引先** を登録
-4. **請求書を作成** → 明細を入力 → 作成
-5. 帳票プレビュー画面で **「印刷 / PDF」** ボタン → ブラウザの印刷ダイアログから PDF 保存
+4. **請求書を作成** → 件名・明細を入力 → 作成
+5. 詳細画面の **「PDFダウンロード」** ボタンで請求書PDFを取得（プレビューも可能）
 
 ## デプロイ（Vercel + Neon）
 
@@ -121,16 +122,17 @@ app/
   (auth)/            ログイン・新規登録（認証アクション）
   (app)/             ログイン後の画面
     dashboard/       ダッシュボード
-    invoices/        請求書 一覧・作成・編集・帳票プレビュー
+    invoices/        請求書 一覧・作成・編集・PDF発行 ([id]/pdf/route.tsx)
     clients/         取引先管理
     settings/        自社情報設定
+assets/fonts/        PDF埋め込み用フォント (Noto Sans JP)
 components/
   ui/                shadcn/ui スタイルの共通コンポーネント
-  invoice-sheet.tsx  A4 帳票（印刷対応）
 lib/
   prisma.ts          Prisma クライアント
   session.ts         セッション（JWT）
   invoice-calc.ts    金額・消費税の計算ロジック
+  invoice-pdf.tsx    請求書PDFのレイアウト (@react-pdf/renderer)
   utils.ts           整形ユーティリティ
 prisma/
   schema.prisma      データモデル

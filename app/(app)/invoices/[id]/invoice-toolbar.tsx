@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { Pencil, Printer, Copy, Trash2 } from "lucide-react";
+import { Pencil, Download, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -27,7 +27,7 @@ export function InvoiceToolbar({
   const statusFormRef = useRef<HTMLFormElement>(null);
 
   return (
-    <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">状態:</span>
         <form action={updateInvoiceStatusAction} ref={statusFormRef}>
@@ -92,9 +92,11 @@ export function InvoiceToolbar({
             削除
           </Button>
         </form>
-        <Button size="sm" onClick={() => window.print()}>
-          <Printer className="h-4 w-4" />
-          印刷 / PDF
+        <Button asChild size="sm">
+          <a href={`/invoices/${id}/pdf?dl=1`}>
+            <Download className="h-4 w-4" />
+            PDFダウンロード
+          </a>
         </Button>
       </div>
     </div>

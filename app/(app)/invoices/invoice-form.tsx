@@ -51,6 +51,7 @@ export interface InvoiceFormData {
   clientId: string;
   invoiceNo: string;
   title: string;
+  subject: string;
   billingMonth: string;
   issueDate: string;
   dueDate: string;
@@ -150,6 +151,7 @@ export function InvoiceForm({
     clientId,
     invoiceNo: defaults.invoiceNo,
     title: defaults.title,
+    subject: defaults.subject,
     billingMonth: defaults.billingMonth,
     issueDate: defaults.issueDate,
     dueDate: defaults.dueDate,
@@ -184,6 +186,7 @@ export function InvoiceForm({
             clientId,
             invoiceNo: get("invoiceNo"),
             title: get("title"),
+            subject: get("subject") || null,
             billingMonth: get("billingMonth"),
             issueDate: get("issueDate"),
             dueDate: get("dueDate") || null,
@@ -242,6 +245,16 @@ export function InvoiceForm({
                   してください。
                 </p>
               )}
+            </div>
+
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="subject">件名</Label>
+              <Input
+                id="subject"
+                name="subject"
+                defaultValue={defaults.subject}
+                placeholder="例: 2026年7月分 RPA設計開発業務支援"
+              />
             </div>
 
             <div className="space-y-2">

@@ -72,6 +72,7 @@ model Invoice {
 
   invoiceNo    String   // 請求書番号
   title        String   @default("御請求書")
+  subject      String?  // 件名 (例: 2026年06月分RPA設計開発業務支援)
   billingMonth String   // 対象月 (YYYY-MM) — 毎月の請求書用
   issueDate    DateTime // 発行日
   dueDate      DateTime? // お支払い期限

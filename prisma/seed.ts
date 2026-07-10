@@ -58,6 +58,7 @@ async function main() {
       clientId: clientA.id,
       invoiceNo: "202607-001",
       title: "御請求書",
+      subject: "2026年7月分 Webサイト保守運用業務",
       billingMonth: "2026-07",
       issueDate: new Date("2026-07-31"),
       dueDate: new Date("2026-08-31"),

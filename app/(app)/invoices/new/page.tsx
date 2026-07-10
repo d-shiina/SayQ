@@ -5,7 +5,7 @@ import { getSession } from "@/lib/session";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { toDateInput, currentMonth } from "@/lib/utils";
+import { toDateInput, currentMonth, formatBillingMonth } from "@/lib/utils";
 import { InvoiceForm } from "../invoice-form";
 import { suggestInvoiceNo } from "@/lib/invoice-no";
 
@@ -51,6 +51,7 @@ export default async function NewInvoicePage() {
           clientId: clients[0].id,
           invoiceNo,
           title: "御請求書",
+          subject: `${formatBillingMonth(billingMonth)}分 `,
           billingMonth,
           issueDate: today,
           dueDate: "",
