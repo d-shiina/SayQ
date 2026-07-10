@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { authSecret as secret } from "@/lib/auth-secret";
 
 const COOKIE_NAME = "sayq_session";
-const secret = new TextEncoder().encode(
-  process.env.AUTH_SECRET ?? "insecure-dev-secret",
-);
 
 // 認証が不要なパス
 const PUBLIC_PATHS = ["/login", "/register"];

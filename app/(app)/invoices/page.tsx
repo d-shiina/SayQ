@@ -103,7 +103,7 @@ export default async function InvoicesPage({
                 );
                 const meta = statusMeta(inv.status);
                 return (
-                  <TableRow key={inv.id} className="cursor-pointer">
+                  <TableRow key={inv.id}>
                     <TableCell className="font-medium">
                       <Link href={`/invoices/${inv.id}`} className="hover:underline">
                         {inv.invoiceNo}

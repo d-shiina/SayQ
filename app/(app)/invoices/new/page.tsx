@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toDateInput, currentMonth } from "@/lib/utils";
 import { InvoiceForm } from "../invoice-form";
-import { suggestInvoiceNo } from "../actions";
+import { suggestInvoiceNo } from "@/lib/invoice-no";
 
 export default async function NewInvoicePage() {
   const session = await getSession();

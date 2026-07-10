@@ -23,7 +23,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r bg-card md:flex">
+    <aside className="no-print hidden w-60 shrink-0 flex-col border-r bg-card md:flex">
       <div className="flex h-14 items-center gap-2 border-b px-5">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <FileText className="h-5 w-5" />

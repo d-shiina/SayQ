@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useFormState } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom";
 import Link from "next/link";
 import { AlertCircle, GripVertical, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,21 @@ export interface InvoiceFormData {
 
 let keySeq = 0;
 const nextKey = () => `row-${keySeq++}`;
+
+function SubmitButton({
+  label,
+  disabled,
+}: {
+  label: string;
+  disabled?: boolean;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={disabled || pending}>
+      {pending ? "保存中…" : label}
+    </Button>
+  );
+}
 
 function emptyRow(): ItemRow {
   return {
@@ -434,9 +449,10 @@ export function InvoiceForm({
             キャンセル
           </Link>
         </Button>
-        <Button type="submit" disabled={clients.length === 0}>
-          {mode === "edit" ? "更新する" : "作成する"}
-        </Button>
+        <SubmitButton
+          label={mode === "edit" ? "更新する" : "作成する"}
+          disabled={clients.length === 0}
+        />
       </div>
     </form>
   );

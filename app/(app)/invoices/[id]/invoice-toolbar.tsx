@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { Pencil, Printer, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,22 +24,27 @@ export function InvoiceToolbar({
   id: string;
   status: string;
 }) {
+  const statusFormRef = useRef<HTMLFormElement>(null);
+
   return (
     <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">状態:</span>
-        <form action={updateInvoiceStatusAction} id={`status-${id}`}>
+        <form action={updateInvoiceStatusAction} ref={statusFormRef}>
           <input type="hidden" name="id" value={id} />
+          {/* Radix Select のフォーム連携は描画タイミングに依存するため、
+              自前の hidden input を同期的に更新してから送信する */}
+          <input type="hidden" name="status" defaultValue={status} />
           <Select
-            name="status"
             defaultValue={status}
-            onValueChange={() => {
-              // Radix Select が name="status" の隠しフィールドを描画するため、
-              // 値変更を反映してからフォームを送信する
-              const form = document.getElementById(
-                `status-${id}`,
-              ) as HTMLFormElement | null;
-              requestAnimationFrame(() => form?.requestSubmit());
+            onValueChange={(v) => {
+              const form = statusFormRef.current;
+              if (!form) return;
+              const input = form.elements.namedItem(
+                "status",
+              ) as HTMLInputElement | null;
+              if (input) input.value = v;
+              form.requestSubmit();
             }}
           >
             <SelectTrigger className="w-32">

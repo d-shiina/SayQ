@@ -5,9 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { suggestInvoiceNo } from "@/lib/invoice-no";
 
 const itemSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1, "品目名を入力してください"),
   quantity: z.coerce.number().finite(),
   unit: z.string().optional().nullable(),
   unitPrice: z.coerce.number().finite(),
@@ -17,7 +18,7 @@ const itemSchema = z.object({
 const invoiceSchema = z.object({
   clientId: z.string().min(1, "取引先を選択してください"),
   invoiceNo: z.string().min(1, "請求書番号を入力してください"),
-  title: z.string().min(1),
+  title: z.string().min(1, "タイトルを入力してください"),
   billingMonth: z.string().regex(/^\d{4}-\d{2}$/, "対象月を選択してください"),
   issueDate: z.string().min(1, "発行日を入力してください"),
   dueDate: z.string().optional().nullable(),
@@ -38,18 +39,6 @@ function parsePayload(formData: FormData) {
   } catch {
     return null;
   }
-}
-
-/** 対象月から次の請求書番号を提案（例: 2026年7月 → 20260701, 既存があれば連番） */
-export async function suggestInvoiceNo(
-  userId: string,
-  billingMonth: string,
-): Promise<string> {
-  const prefix = billingMonth.replace("-", "");
-  const count = await prisma.invoice.count({
-    where: { userId, invoiceNo: { startsWith: prefix } },
-  });
-  return `${prefix}-${String(count + 1).padStart(3, "0")}`;
 }
 
 export async function createInvoiceAction(
@@ -219,7 +208,8 @@ export async function duplicateInvoiceAction(formData: FormData) {
       invoiceNo: newNo,
       title: src.title,
       billingMonth: src.billingMonth,
-      issueDate: new Date(),
+      // 他の日付と同様に date-only（UTC深夜）へ正規化して保存する
+      issueDate: new Date(new Date().toISOString().slice(0, 10)),
       dueDate: src.dueDate,
       notes: src.notes,
       taxRounding: src.taxRounding,

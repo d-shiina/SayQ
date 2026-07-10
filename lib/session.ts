@@ -3,11 +3,9 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { cache } from "react";
 import { prisma } from "./prisma";
+import { authSecret as secret } from "./auth-secret";
 
 const COOKIE_NAME = "sayq_session";
-const secret = new TextEncoder().encode(
-  process.env.AUTH_SECRET ?? "insecure-dev-secret",
-);
 
 export interface SessionPayload {
   userId: string;

@@ -5,9 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** 数値を日本円表記に整形（¥1,234） */
+/** 数値を日本円表記に整形（¥1,234 / -¥1,234） */
 export function formatYen(value: number): string {
-  return "¥" + Math.round(value).toLocaleString("ja-JP");
+  const rounded = Math.round(value);
+  const sign = rounded < 0 ? "-" : "";
+  return sign + "¥" + Math.abs(rounded).toLocaleString("ja-JP");
 }
 
 /** 数値を桁区切りに（1,234） */
@@ -15,21 +17,22 @@ export function formatNumber(value: number): string {
   return value.toLocaleString("ja-JP");
 }
 
-/** Date を YYYY年M月D日 表記に */
+/**
+ * Date を YYYY年M月D日 表記に。
+ * 日付は "YYYY-MM-DD" 由来（UTC深夜）で保存されるため、
+ * サーバーのタイムゾーンに依存しないよう UTC 基準で読む。
+ */
 export function formatDateJa(date: Date | string | null | undefined): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+  return `${d.getUTCFullYear()}年${d.getUTCMonth() + 1}月${d.getUTCDate()}日`;
 }
 
-/** Date を input[type=date] 用の YYYY-MM-DD に */
+/** Date を input[type=date] 用の YYYY-MM-DD に（UTC基準） */
 export function toDateInput(date: Date | string | null | undefined): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  return d.toISOString().slice(0, 10);
 }
 
 /** 対象月 (YYYY-MM) を YYYY年M月 表記に */
