@@ -5,10 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { calcTotals, type TaxRounding } from "@/lib/invoice-calc";
 import { formatYen, formatDateJa, formatBillingMonth } from "@/lib/utils";
-import { statusMeta } from "@/lib/invoice-status";
+import { StatusBadge } from "@/components/status-badge";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -87,11 +86,14 @@ export default async function InvoicesPage({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>請求書番号</TableHead>
+                <TableHead className="hidden sm:table-cell">請求書番号</TableHead>
                 <TableHead>取引先</TableHead>
                 <TableHead className="hidden sm:table-cell">対象月</TableHead>
                 <TableHead className="hidden md:table-cell">発行日</TableHead>
-                <TableHead className="text-right">金額（税込）</TableHead>
+                <TableHead className="whitespace-nowrap text-right">
+                  <span className="sm:hidden">金額</span>
+                  <span className="hidden sm:inline">金額（税込）</span>
+                </TableHead>
                 <TableHead>状態</TableHead>
               </TableRow>
             </TableHeader>
@@ -101,19 +103,29 @@ export default async function InvoicesPage({
                   inv.items,
                   inv.taxRounding as TaxRounding,
                 );
-                const meta = statusMeta(inv.status);
                 return (
                   <TableRow key={inv.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="hidden whitespace-nowrap font-medium sm:table-cell">
                       <Link href={`/invoices/${inv.id}`} className="hover:underline">
                         {inv.invoiceNo}
                       </Link>
                     </TableCell>
-                    <TableCell>
-                      {inv.client.name}
-                      <span className="ml-1 text-xs text-muted-foreground">
-                        {inv.client.honorific}
-                      </span>
+                    <TableCell className="max-w-[10rem] sm:max-w-none">
+                      {/* モバイルでは取引先セルが詳細へのリンクを兼ねる */}
+                      <Link
+                        href={`/invoices/${inv.id}`}
+                        className="block sm:pointer-events-none sm:no-underline"
+                      >
+                        <span className="block truncate">
+                          {inv.client.name}
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            {inv.client.honorific}
+                          </span>
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground sm:hidden">
+                          {inv.invoiceNo}
+                        </span>
+                      </Link>
                     </TableCell>
                     <TableCell className="hidden text-muted-foreground sm:table-cell">
                       {formatBillingMonth(inv.billingMonth)}
@@ -121,11 +133,11 @@ export default async function InvoicesPage({
                     <TableCell className="hidden text-muted-foreground md:table-cell">
                       {formatDateJa(inv.issueDate)}
                     </TableCell>
-                    <TableCell className="text-right font-medium tabular-nums">
+                    <TableCell className="whitespace-nowrap text-right font-medium tabular-nums">
                       {formatYen(totals.total)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={meta.variant}>{meta.label}</Badge>
+                      <StatusBadge status={inv.status} />
                     </TableCell>
                   </TableRow>
                 );

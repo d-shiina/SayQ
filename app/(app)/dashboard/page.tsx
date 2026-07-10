@@ -16,10 +16,9 @@ import {
   formatBillingMonth,
   currentMonth,
 } from "@/lib/utils";
-import { statusMeta } from "@/lib/invoice-status";
+import { StatusBadge } from "@/components/status-badge";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -132,35 +131,30 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <ul className="divide-y">
-              {recent.map(({ inv, total }) => {
-                const meta = statusMeta(inv.status);
-                return (
-                  <li key={inv.id}>
-                    <Link
-                      href={`/invoices/${inv.id}`}
-                      className="flex items-center justify-between gap-3 py-3 transition-colors hover:bg-muted/40"
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate font-medium">
-                          {inv.client.name}
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            {inv.client.honorific}
-                          </span>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {inv.invoiceNo} · {formatDateJa(inv.issueDate)}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge variant={meta.variant}>{meta.label}</Badge>
-                        <span className="w-24 text-right font-medium tabular-nums">
-                          {formatYen(total)}
+              {recent.map(({ inv, total }) => (
+                <li key={inv.id}>
+                  <Link
+                    href={`/invoices/${inv.id}`}
+                    className="grid grid-cols-[minmax(0,1fr)_auto_5.5rem] items-center gap-3 py-3 transition-colors hover:bg-muted/40"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">
+                        {inv.client.name}
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          {inv.client.honorific}
                         </span>
                       </div>
-                    </Link>
-                  </li>
-                );
-              })}
+                      <div className="truncate text-xs text-muted-foreground">
+                        {inv.invoiceNo} · {formatDateJa(inv.issueDate)}
+                      </div>
+                    </div>
+                    <StatusBadge status={inv.status} />
+                    <span className="text-right font-medium tabular-nums">
+                      {formatYen(total)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </CardContent>
