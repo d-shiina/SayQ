@@ -30,7 +30,7 @@ npm install
 
 # 2. 環境変数を用意（.env.example をコピー）
 cp .env.example .env
-#   DATABASE_URL / DIRECT_URL に Neon の接続文字列を設定（下記「デプロイ」参照）
+#   DATABASE_URL / DATABASE_URL_UNPOOLED に Neon の接続文字列を設定（下記「デプロイ」参照）
 #   AUTH_SECRET には十分に長いランダム値を設定（例: openssl rand -base64 32）
 
 # 3. データベースにスキーマを反映
@@ -69,12 +69,12 @@ DB は Prisma + PostgreSQL 構成、初期マイグレーションは `prisma/mi
 1. <https://neon.tech> にサインアップ → 新規プロジェクトを作成
 2. 作成後の **Connection string** を控える。2種類ある点に注意:
    - **Pooled**（ホスト名に `-pooler` が付く）→ アプリ実行用 = `DATABASE_URL`
-   - **Direct / Unpooled**（`-pooler` なし）→ マイグレーション用 = `DIRECT_URL`
+   - **Direct / Unpooled**（`-pooler` なし）→ マイグレーション用 = `DATABASE_URL_UNPOOLED`
    - どちらも末尾に `?sslmode=require` を付ける
 
-> Vercel の **Storage → Create Database → Neon** から作ると Vercel と自動連携され、
-> `DATABASE_URL` と `DATABASE_URL_UNPOOLED` が自動で入ります。その場合は下記 3 で
-> `DIRECT_URL` に `DATABASE_URL_UNPOOLED` の値を手動で設定してください。
+> **Vercel の Storage → Create Database → Neon から作るのが最も簡単です。**
+> `DATABASE_URL` と `DATABASE_URL_UNPOOLED` が自動で環境変数に注入されるため、
+> DB 用の環境変数は手動設定不要。追加で必要なのは `AUTH_SECRET` だけです。
 
 ### 2. Vercel にインポート
 
@@ -83,13 +83,15 @@ DB は Prisma + PostgreSQL 構成、初期マイグレーションは `prisma/mi
 
 ### 3. 環境変数を設定（Vercel → Settings → Environment Variables）
 
-| 変数名 | 値 |
-| --- | --- |
-| `DATABASE_URL` | Neon の **Pooled** 接続文字列（`-pooler` 付き） |
-| `DIRECT_URL` | Neon の **Direct** 接続文字列（`-pooler` なし） |
-| `AUTH_SECRET` | `openssl rand -base64 32` で生成したランダム値 |
+| 変数名 | 値 | 備考 |
+| --- | --- | --- |
+| `DATABASE_URL` | Neon の **Pooled** 接続文字列（`-pooler` 付き） | Neon 連携なら自動 |
+| `DATABASE_URL_UNPOOLED` | Neon の **Direct** 接続文字列（`-pooler` なし） | Neon 連携なら自動 |
+| `AUTH_SECRET` | `openssl rand -base64 32` で生成したランダム値 | **手動で設定** |
 
-すべて Production / Preview / Development にチェックを入れて保存します。
+Vercel の Neon 連携で DB を作った場合、`DATABASE_URL` 系は自動注入されるため、
+**手動追加が必要なのは `AUTH_SECRET` のみ**です（Production / Preview / Development にチェック）。
+外部で作った Neon を使う場合は 3 つとも手動設定してください。
 
 ### 4. デプロイ
 
@@ -102,7 +104,7 @@ Neon にテーブルが作成されます。完了後、公開 URL の `/registe
 手元から本番 DB に対して実行:
 
 ```bash
-# .env の DATABASE_URL / DIRECT_URL を Neon の値にした状態で
+# .env の DATABASE_URL / DATABASE_URL_UNPOOLED を Neon の値にした状態で
 npm run db:seed   # demo@example.com / password123
 ```
 
