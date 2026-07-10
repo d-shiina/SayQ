@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ function SubmitButton({ label }: { label: string }) {
 
 export function ClientForm({ client }: { client?: ClientLike }) {
   const action = client ? updateClientAction : createClientAction;
-  const [state, formAction] = useFormState(action, {} as ClientState);
+  const [state, formAction] = useActionState(action, {} as ClientState);
 
   return (
     <form action={formAction} className="space-y-6">

@@ -22,7 +22,8 @@ export async function createSession(payload: SessionPayload): Promise<string> {
 
 export async function setSessionCookie(token: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  cookies().set(COOKIE_NAME, token, {
+  const store = await cookies();
+  store.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -31,8 +32,9 @@ export async function setSessionCookie(token: string) {
   });
 }
 
-export function clearSessionCookie() {
-  cookies().delete(COOKIE_NAME);
+export async function clearSessionCookie() {
+  const store = await cookies();
+  store.delete(COOKIE_NAME);
 }
 
 export async function verifySessionToken(
@@ -54,8 +56,8 @@ export async function verifySessionToken(
 
 /** 現在のセッション（トークンのみ検証、DBアクセスなし） */
 export const getSession = cache(async (): Promise<SessionPayload | null> => {
-  const token = cookies().get(COOKIE_NAME)?.value;
-  return verifySessionToken(token);
+  const store = await cookies();
+  return verifySessionToken(store.get(COOKIE_NAME)?.value);
 });
 
 /** 現在のログインユーザーをDBから取得。未ログインなら null */

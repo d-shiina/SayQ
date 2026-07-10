@@ -23,12 +23,12 @@ import { MonthFilter } from "./month-filter";
 export default async function InvoicesPage({
   searchParams,
 }: {
-  searchParams: { month?: string };
+  searchParams: Promise<{ month?: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const month = searchParams.month;
+  const { month } = await searchParams;
 
   const invoices = await prisma.invoice.findMany({
     where: {

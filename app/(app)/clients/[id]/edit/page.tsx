@@ -7,13 +7,14 @@ import { ClientForm } from "../../client-form";
 export default async function EditClientPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
 
+  const { id } = await params;
   const client = await prisma.client.findFirst({
-    where: { id: params.id, userId: session.userId },
+    where: { id, userId: session.userId },
   });
   if (!client) notFound();
 

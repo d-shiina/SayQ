@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { AlertCircle, GripVertical, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -96,7 +97,7 @@ export function InvoiceForm({
   mode: "create" | "edit";
 }) {
   const action = mode === "edit" ? updateInvoiceAction : createInvoiceAction;
-  const [state, formAction] = useFormState(action, {} as InvoiceState);
+  const [state, formAction] = useActionState(action, {} as InvoiceState);
 
   const [clientId, setClientId] = useState(defaults.clientId);
   const [taxRounding, setTaxRounding] = useState<TaxRounding>(

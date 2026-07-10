@@ -19,10 +19,11 @@ import { deleteClientAction } from "./actions";
 export default async function ClientsPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
+  const { error } = await searchParams;
 
   const clients = await prisma.client.findMany({
     where: { userId: session.userId },
@@ -41,7 +42,7 @@ export default async function ClientsPage({
         </Button>
       </PageHeader>
 
-      {searchParams.error === "has_invoices" && (
+      {error === "has_invoices" && (
         <p className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
           請求書が紐づいている取引先は削除できません。
         </p>

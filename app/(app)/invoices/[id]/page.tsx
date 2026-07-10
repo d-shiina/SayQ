@@ -9,13 +9,14 @@ import { InvoiceToolbar } from "./invoice-toolbar";
 export default async function InvoiceDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
+  const { id } = await params;
   const invoice = await prisma.invoice.findFirst({
-    where: { id: params.id, userId: user.id },
+    where: { id, userId: user.id },
     include: {
       client: true,
       items: { orderBy: { sortOrder: "asc" } },

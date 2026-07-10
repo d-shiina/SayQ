@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,7 @@ function SubmitButton({ label }: { label: string }) {
 const initialState: AuthState = {};
 
 export function LoginForm() {
-  const [state, formAction] = useFormState(loginAction, initialState);
+  const [state, formAction] = useActionState(loginAction, initialState);
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -72,7 +73,7 @@ export function LoginForm() {
 }
 
 export function RegisterForm() {
-  const [state, formAction] = useFormState(registerAction, initialState);
+  const [state, formAction] = useActionState(registerAction, initialState);
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>

@@ -9,13 +9,14 @@ import type { TaxRounding } from "@/lib/invoice-calc";
 export default async function EditInvoicePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
 
+  const { id } = await params;
   const invoice = await prisma.invoice.findFirst({
-    where: { id: params.id, userId: session.userId },
+    where: { id, userId: session.userId },
     include: { items: { orderBy: { sortOrder: "asc" } } },
   });
   if (!invoice) notFound();

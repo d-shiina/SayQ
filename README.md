@@ -16,7 +16,7 @@ freee のような「帳票 + フォーム」で、毎月の請求書をかん�
 
 | 領域 | 採用技術 |
 | --- | --- |
-| フレームワーク | Next.js 14 (App Router) / React 18 / TypeScript |
+| フレームワーク | Next.js 16 (App Router) / React 19 / TypeScript |
 | UI | Tailwind CSS + shadcn/ui スタイルのコンポーネント |
 | DB / ORM | Prisma + SQLite（本番は PostgreSQL 等に差し替え可能） |
 | 認証 | 自前のセッション（`jose` による JWT + `bcryptjs`） |
@@ -98,7 +98,7 @@ lib/
 prisma/
   schema.prisma      データモデル
   seed.ts            デモデータ
-middleware.ts        認証によるルート保護
+proxy.ts             認証によるルート保護（Next.js Proxy、旧middleware）
 ```
 
 ## ライセンス
