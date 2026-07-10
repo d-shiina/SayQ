@@ -19,7 +19,7 @@ freee のような「帳票 + フォーム」で、毎月の請求書をかん�
 | 領域 | 採用技術 |
 | --- | --- |
 | フレームワーク | Next.js 16 (App Router) / React 19 / TypeScript |
-| PDF生成 | puppeteer-core + @sparticuz/chromium（帳票HTMLをサーバーサイドでPDF化） |
+| PDF生成 | puppeteer-core + @sparticuz/chromium-min（Chromiumパックは public/ で自己ホスト） |
 | UI | Tailwind CSS + shadcn/ui スタイルのコンポーネント |
 | DB / ORM | Prisma + PostgreSQL（Neon 推奨） |
 | 認証 | 自前のセッション（`jose` による JWT + `bcryptjs`） |

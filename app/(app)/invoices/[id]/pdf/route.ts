@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // Chromium起動を含むためコールドスタート時に時間がかかる
 export const maxDuration = 60;
 
-async function launchBrowser() {
+async function launchBrowser(origin: string) {
   const puppeteer = await import("puppeteer-core");
 
   // 明示的なパス指定（この開発環境やセルフホスト向け）
@@ -20,13 +20,18 @@ async function launchBrowser() {
     });
   }
 
-  // Vercel等のサーバーレス環境: Lambda向けChromiumを使用
+  // Vercel等のサーバーレス環境: Lambda向けChromiumを使用。
+  // バイナリは public/chromium-pack.tar として自己ホストしており、
+  // 初回起動時に自分のCDNからダウンロードして /tmp に展開する
+  // （関数バンドルへの同梱はファイルトレースが効かず失敗するため）
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-    const chromium = (await import("@sparticuz/chromium")).default;
+    const chromium = (await import("@sparticuz/chromium-min")).default;
     // テキスト中心のページなのでWebGLを無効化（サーバーレスでの安定性向上）
     chromium.setGraphicsMode = false;
+    const packUrl =
+      process.env.CHROMIUM_PACK_URL ?? `${origin}/chromium-pack.tar`;
     return puppeteer.launch({
-      executablePath: await chromium.executablePath(),
+      executablePath: await chromium.executablePath(packUrl),
       headless: true,
       args: chromium.args,
     });
@@ -69,7 +74,7 @@ export async function GET(
 
   let pdf: Uint8Array;
   try {
-    const browser = await launchBrowser();
+    const browser = await launchBrowser(origin);
     try {
       const page = await browser.newPage();
       // セッションCookieを引き継いで認証済みページとして描画
