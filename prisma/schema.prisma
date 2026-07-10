@@ -4,8 +4,11 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // アプリ実行時はプール接続（Neon の -pooler ホスト）を使う
+  url       = env("DATABASE_URL")
+  // マイグレーション/スキーマ同期は直結（非プール）接続を使う
+  directUrl = env("DIRECT_URL")
 }
 
 // ユーザー（＝発行者。自社情報も保持）

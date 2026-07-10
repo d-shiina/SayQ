@@ -18,7 +18,7 @@ freee のような「帳票 + フォーム」で、毎月の請求書をかん�
 | --- | --- |
 | フレームワーク | Next.js 16 (App Router) / React 19 / TypeScript |
 | UI | Tailwind CSS + shadcn/ui スタイルのコンポーネント |
-| DB / ORM | Prisma + SQLite（本番は PostgreSQL 等に差し替え可能） |
+| DB / ORM | Prisma + PostgreSQL（Neon 推奨） |
 | 認証 | 自前のセッション（`jose` による JWT + `bcryptjs`） |
 | バリデーション | Zod |
 
@@ -30,11 +30,12 @@ npm install
 
 # 2. 環境変数を用意（.env.example をコピー）
 cp .env.example .env
-#   AUTH_SECRET には十分に長いランダム値を設定してください
-#   例: openssl rand -base64 32
+#   DATABASE_URL / DIRECT_URL に Neon の接続文字列を設定（下記「デプロイ」参照）
+#   AUTH_SECRET には十分に長いランダム値を設定（例: openssl rand -base64 32）
 
-# 3. データベースを作成
-npm run db:push
+# 3. データベースにスキーマを反映
+npm run db:migrate      # 本番と同じ migrate deploy（Neon に対して実行）
+#   ↑ ローカルでスキーマを試行錯誤する場合は npm run db:push でも可
 
 # 4. （任意）デモデータを投入
 npm run db:seed
@@ -44,6 +45,9 @@ npm run db:seed
 npm run dev
 # http://localhost:3000
 ```
+
+> ローカル開発でも DB は Neon を使います（開発用に別の Neon プロジェクト／ブランチを
+> 作っておくと本番と分離できます）。ローカルだけ別の PostgreSQL を立てても構いません。
 
 ## 使い方
 
@@ -56,26 +60,55 @@ npm run dev
 ## デプロイ（Vercel + Neon）
 
 このアプリは **Vercel + Neon（サーバーレス PostgreSQL）** の無料枠で運用できます。
+DB は Prisma + PostgreSQL 構成、初期マイグレーションは `prisma/migrations/` に含まれており、
+`npm run build`（= `prisma generate && prisma migrate deploy && next build`）で
+デプロイ時に自動でスキーマが反映されます。
 
-1. `prisma/schema.prisma` の datasource を切り替え:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-2. Vercel にプロジェクトをインポート
-3. Vercel ダッシュボードの **Storage → Create Database → Neon** で DB を作成
-   （`DATABASE_URL` が自動で環境変数に設定されます）
-4. 環境変数 **`AUTH_SECRET`** を設定（`openssl rand -base64 32` の値など）
-5. デプロイ後、初回のみスキーマを反映:
-   ```bash
-   npx prisma migrate deploy   # もしくは npx prisma db push
-   ```
+### 1. Neon で DB を作成
 
-ビルドコマンドには `prisma generate` を含めているため（`npm run build`）、追加設定は不要です。
+1. <https://neon.tech> にサインアップ → 新規プロジェクトを作成
+2. 作成後の **Connection string** を控える。2種類ある点に注意:
+   - **Pooled**（ホスト名に `-pooler` が付く）→ アプリ実行用 = `DATABASE_URL`
+   - **Direct / Unpooled**（`-pooler` なし）→ マイグレーション用 = `DIRECT_URL`
+   - どちらも末尾に `?sslmode=require` を付ける
 
-> Vercel の Hobby プランは規約上「非商用」向けです。事業として本格運用する場合は Pro プランをご検討ください。
+> Vercel の **Storage → Create Database → Neon** から作ると Vercel と自動連携され、
+> `DATABASE_URL` と `DATABASE_URL_UNPOOLED` が自動で入ります。その場合は下記 3 で
+> `DIRECT_URL` に `DATABASE_URL_UNPOOLED` の値を手動で設定してください。
+
+### 2. Vercel にインポート
+
+1. <https://vercel.com> でこのリポジトリを **Import**
+2. Framework は自動で Next.js と認識されます（Build/Install コマンドは変更不要）
+
+### 3. 環境変数を設定（Vercel → Settings → Environment Variables）
+
+| 変数名 | 値 |
+| --- | --- |
+| `DATABASE_URL` | Neon の **Pooled** 接続文字列（`-pooler` 付き） |
+| `DIRECT_URL` | Neon の **Direct** 接続文字列（`-pooler` なし） |
+| `AUTH_SECRET` | `openssl rand -base64 32` で生成したランダム値 |
+
+すべて Production / Preview / Development にチェックを入れて保存します。
+
+### 4. デプロイ
+
+**Deploy** を実行するだけです。ビルド中に `prisma migrate deploy` が走り、
+Neon にテーブルが作成されます。完了後、公開 URL の `/register` からアカウントを
+作成して利用開始できます。
+
+### （任意）デモデータの投入
+
+手元から本番 DB に対して実行:
+
+```bash
+# .env の DATABASE_URL / DIRECT_URL を Neon の値にした状態で
+npm run db:seed   # demo@example.com / password123
+```
+
+> **Vercel Hobby プランは規約上「非商用」向け**です。事業として本格運用する場合は
+> Pro プラン（$20/月）をご検討ください。月数回・数社程度の利用なら Vercel・Neon とも
+> 無料枠に十分収まります。
 
 ## ディレクトリ構成
 
