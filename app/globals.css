@@ -40,9 +40,11 @@
 
 /* ------- 印刷（帳票 PDF 出力）用スタイル ------- */
 @media print {
+  /* 余白を0にするとブラウザ既定のヘッダー/フッター（URL・日付・ページ番号）が
+     描画されない。紙面の余白は .print-sheet 自身の padding で確保する */
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 0;
   }
 
   html,
@@ -55,14 +57,21 @@
     display: none !important;
   }
 
-  /* 帳票本体は画面上の枠線/影を消してフル幅に */
+  /* 帳票本体は画面上の枠線/影を消してフル幅に（padding は保持） */
   .print-sheet {
     box-shadow: none !important;
     border: none !important;
     margin: 0 !important;
-    padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    /* 背景色・アクセントカラーを印刷でも再現する */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-sheet * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .print-area {
