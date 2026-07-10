@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useActionState } from "react";
+import { useMemo, useState, useActionState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { AlertCircle, GripVertical, Plus, Trash2 } from "lucide-react";
@@ -75,6 +74,15 @@ function SubmitButton({
     <Button type="submit" disabled={disabled || pending}>
       {pending ? "保存中…" : label}
     </Button>
+  );
+}
+
+/** モバイルのみ表示する明細フィールドのラベル */
+function MobileFieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <span className="mb-1 block text-xs font-medium text-muted-foreground md:hidden">
+      {children}
+    </span>
   );
 }
 
@@ -337,17 +345,37 @@ export function InvoiceForm({
             <span />
           </div>
 
-          {items.map((it) => {
+          {items.map((it, index) => {
             const amount = (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0);
             return (
               <div
                 key={it.key}
-                className="grid grid-cols-2 items-center gap-2 rounded-lg border p-3 md:grid-cols-[1.5rem_1fr_5rem_5rem_7rem_6rem_6rem_2rem] md:border-0 md:p-0 md:pl-0"
+                className="grid grid-cols-2 items-center gap-3 rounded-xl border bg-muted/20 p-4 md:grid-cols-[1.5rem_1fr_5rem_5rem_7rem_6rem_6rem_2rem] md:gap-2 md:rounded-none md:border-0 md:bg-transparent md:p-0"
               >
                 <div className="hidden items-center justify-center text-muted-foreground md:flex">
                   <GripVertical className="h-4 w-4" />
                 </div>
+
+                {/* モバイル: 行番号 + 削除ボタンのヘッダー */}
+                <div className="col-span-2 -mb-1 flex items-center justify-between md:hidden">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    明細 {index + 1}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="-mr-2 h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeItem(it.key)}
+                    disabled={items.length === 1}
+                    aria-label="行を削除"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
                 <div className="col-span-2 md:col-span-1">
+                  <MobileFieldLabel>品目</MobileFieldLabel>
                   <Input
                     placeholder="品目名"
                     value={it.name}
@@ -355,6 +383,7 @@ export function InvoiceForm({
                   />
                 </div>
                 <div>
+                  <MobileFieldLabel>数量</MobileFieldLabel>
                   <Input
                     type="number"
                     inputMode="decimal"
@@ -367,6 +396,7 @@ export function InvoiceForm({
                   />
                 </div>
                 <div>
+                  <MobileFieldLabel>単位</MobileFieldLabel>
                   <Input
                     placeholder="式"
                     value={it.unit}
@@ -374,6 +404,7 @@ export function InvoiceForm({
                   />
                 </div>
                 <div>
+                  <MobileFieldLabel>単価</MobileFieldLabel>
                   <Input
                     type="number"
                     inputMode="decimal"
@@ -386,6 +417,7 @@ export function InvoiceForm({
                   />
                 </div>
                 <div>
+                  <MobileFieldLabel>税率</MobileFieldLabel>
                   <Select
                     value={String(it.taxRate)}
                     onValueChange={(v) =>
@@ -402,10 +434,15 @@ export function InvoiceForm({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="text-right tabular-nums text-sm font-medium">
-                  {formatYen(amount)}
+                <div className="col-span-2 flex items-baseline justify-between border-t pt-2 md:col-span-1 md:block md:border-0 md:pt-0 md:text-right">
+                  <span className="text-xs font-medium text-muted-foreground md:hidden">
+                    金額
+                  </span>
+                  <span className="tabular-nums text-sm font-semibold md:font-medium">
+                    {formatYen(amount)}
+                  </span>
                 </div>
-                <div className="flex justify-end">
+                <div className="hidden justify-end md:flex">
                   <Button
                     type="button"
                     variant="ghost"
