@@ -140,6 +140,13 @@ export function InvoiceForm({
   }
   function addItem() {
     setItems((prev) => [...prev, emptyRow()]);
+    // 追加した行の品目欄へフォーカス（フォーカス移動で画面も追従する）
+    setTimeout(() => {
+      const inputs = document.querySelectorAll<HTMLInputElement>(
+        'input[placeholder="品目名"]',
+      );
+      inputs[inputs.length - 1]?.focus();
+    }, 0);
   }
   function removeItem(key: string) {
     setItems((prev) =>
@@ -339,12 +346,8 @@ export function InvoiceForm({
 
       {/* 明細 */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardHeader>
           <CardTitle>明細</CardTitle>
-          <Button type="button" variant="outline" size="sm" onClick={addItem}>
-            <Plus className="h-4 w-4" />
-            行を追加
-          </Button>
         </CardHeader>
         <CardContent className="space-y-3">
           {/* ヘッダー（md以上） */}
@@ -471,6 +474,17 @@ export function InvoiceForm({
               </div>
             );
           })}
+
+          {/* 行追加は常にリストの末尾（追加後にスクロールで戻らなくて済む） */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-dashed text-muted-foreground hover:text-foreground"
+            onClick={addItem}
+          >
+            <Plus className="h-4 w-4" />
+            行を追加
+          </Button>
         </CardContent>
       </Card>
 
