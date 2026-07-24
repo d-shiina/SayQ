@@ -305,7 +305,7 @@ export function InvoiceSheet({
         </div>
       </div>
 
-      {/* 備考 + ページ番号（用紙下部に固定） */}
+      {/* 備考（用紙下部に固定。ページ番号はPDF生成時のフッターで描画） */}
       <div className="mt-auto">
         {invoice.notes && (
           <div className="mt-4 rounded-lg border border-slate-200 px-4 py-3 text-[11px]">
@@ -317,9 +317,6 @@ export function InvoiceSheet({
             </div>
           </div>
         )}
-        <div className="pt-3 text-center text-[10px] tabular-nums text-slate-400">
-          1 / 1
-        </div>
       </div>
     </div>
   );

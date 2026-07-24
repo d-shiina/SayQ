@@ -87,6 +87,15 @@ export async function GET(
         format: "a4",
         printBackground: true,
         preferCSSPageSize: true,
+        // 上下余白は全ページで繰り返されるプリンタ余白として確保する
+        // （@pageやシートのpaddingだと2ページ目以降の先頭に余白が付かない）
+        margin: { top: "12mm", bottom: "14mm", left: "0", right: "0" },
+        // 下余白に「1 / 2」形式のページ番号を描画する
+        displayHeaderFooter: true,
+        headerTemplate: "<span></span>",
+        footerTemplate:
+          '<div style="width:100%;text-align:center;font-size:9px;color:#94a3b8;font-family:sans-serif;">' +
+          '<span class="pageNumber"></span> / <span class="totalPages"></span></div>',
       });
     } finally {
       await browser.close();
