@@ -4,6 +4,23 @@ import * as React from "react";
 import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+/** Content-Disposition ヘッダーからファイル名を取り出す（filename* を優先） */
+function filenameFromContentDisposition(
+  header: string | null,
+): string | null {
+  if (!header) return null;
+  const star = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (star) {
+    try {
+      return decodeURIComponent(star[1]);
+    } catch {
+      // フォールバックへ
+    }
+  }
+  const plain = header.match(/filename="?([^";]+)"?/i);
+  return plain ? plain[1] : null;
+}
+
 /**
  * PDFをfetchしてblobとして保存するダウンロードボタン。
  * - 生成中（サーバーレスのコールドスタートで数秒かかる）はスピナーを表示
@@ -31,10 +48,15 @@ export function PdfDownloadButton({
       }
       const blob = await res.blob();
       const no = invoiceNo.startsWith("INV-") ? invoiceNo : `INV-${invoiceNo}`;
+      // ファイル名はサーバーの Content-Disposition から取得（宛先_件名_タイトル_番号）
+      const filename =
+        filenameFromContentDisposition(
+          res.headers.get("Content-Disposition"),
+        ) ?? `御請求書_${no}.pdf`;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `御請求書_${no}.pdf`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();

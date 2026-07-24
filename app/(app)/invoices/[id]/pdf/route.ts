@@ -2,10 +2,21 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { COOKIE_NAME } from "@/lib/session";
+import { formatBillingMonth } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 // Chromium起動を含むためコールドスタート時に時間がかかる
 export const maxDuration = 60;
+
+/** ファイル名に使えない文字を除去して空白を整える（拡張子は付けない） */
+function sanitizeFilename(name: string): string {
+  return name
+    .replace(/[\\/:*?"<>|]/g, "") // 各OSでファイル名に使えない文字
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f]/g, "") // 制御文字
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 async function launchBrowser(origin: string) {
   const puppeteer = await import("puppeteer-core");
@@ -53,7 +64,14 @@ export async function GET(
   const { id } = await params;
   const invoice = await prisma.invoice.findFirst({
     where: { id, userId: user.id },
-    select: { id: true, invoiceNo: true },
+    select: {
+      id: true,
+      invoiceNo: true,
+      title: true,
+      subject: true,
+      billingMonth: true,
+      client: { select: { name: true, honorific: true } },
+    },
   });
   if (!invoice) {
     return new Response("Not Found", { status: 404 });
@@ -106,11 +124,20 @@ export async function GET(
     return new Response(`PDF生成エラー: ${message}`, { status: 500 });
   }
 
-  // 例: 御請求書_INV-202607-001.pdf（番号が既に INV- で始まる場合は重複させない）
+  // 番号が既に INV- で始まる場合は重複させない
   const no = invoice.invoiceNo.startsWith("INV-")
     ? invoice.invoiceNo
     : `INV-${invoice.invoiceNo}`;
-  const encoded = encodeURIComponent(`御請求書_${no}.pdf`);
+
+  // 例: 株式会社ハードスタイル御中_2026年07月分RPA設計開発業務支援_請求書_INV-0000000051.pdf
+  const client = `${invoice.client.name}${invoice.client.honorific}`;
+  const subject =
+    invoice.subject?.trim() || `${formatBillingMonth(invoice.billingMonth)}分`;
+  const title = invoice.title?.trim() || "請求書";
+  const filename = `${sanitizeFilename(
+    `${client}_${subject}_${title}_${no}`,
+  )}.pdf`;
+  const encoded = encodeURIComponent(filename);
   const download = req.nextUrl.searchParams.get("dl") === "1";
 
   return new Response(new Uint8Array(pdf), {
