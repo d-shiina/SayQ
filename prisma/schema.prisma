@@ -27,7 +27,13 @@ model User {
   companyTel     String?
   companyEmail   String?
   invoiceRegNo   String? // インボイス制度 登録番号 (例: T1234567890123)
-  bankInfo       String? // 振込先（銀行/支店/種別/口座番号/名義）
+  // 振込先（構造化フィールド。表記ゆれ防止のため項目ごとに保持）
+  bankName          String? // 銀行名（例: PayPay銀行）
+  bankBranch        String? // 支店名（例: ビジネス営業部）
+  bankAccountType   String? // 口座種別（普通 / 当座）
+  bankAccountNumber String? // 口座番号
+  bankAccountHolder String? // 口座名義
+  bankInfo       String? // 旧: 振込先フリーテキスト（構造化フィールド未入力時のフォールバック）
   sealText       String? // 角印代わりの表示テキスト（画像未設定時のフォールバック）
   sealImage      String? // 角印画像 (data URL、クライアントで縮小済み)
 
