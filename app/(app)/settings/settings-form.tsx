@@ -7,7 +7,6 @@ import { CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -28,6 +27,11 @@ type UserLike = {
   companyTel: string | null;
   companyEmail: string | null;
   invoiceRegNo: string | null;
+  bankName: string | null;
+  bankBranch: string | null;
+  bankAccountType: string | null;
+  bankAccountNumber: string | null;
+  bankAccountHolder: string | null;
   bankInfo: string | null;
   sealText: string | null;
   sealImage: string | null;
@@ -143,18 +147,54 @@ export function SettingsForm({ user }: { user: UserLike }) {
             placeholder="T1234567890123"
             hint="適格請求書発行事業者の登録番号（任意）"
           />
-          <div className="space-y-2">
-            <Label htmlFor="bankInfo">振込先</Label>
-            <Textarea
-              id="bankInfo"
-              name="bankInfo"
-              defaultValue={user.bankInfo ?? ""}
-              rows={3}
-              placeholder={"〇〇銀行 △△支店 普通 1234567\n口座名義 カ）サンプル"}
-            />
-            <p className="text-xs text-muted-foreground">
-              帳票の下部に表示されます（改行可）
-            </p>
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm font-medium">振込先</p>
+              <p className="text-xs text-muted-foreground">
+                項目ごとに入力すると、帳票に表記ゆれなく表示されます
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                id="bankName"
+                label="銀行名"
+                defaultValue={user.bankName}
+                placeholder="PayPay銀行"
+              />
+              <Field
+                id="bankBranch"
+                label="支店名"
+                defaultValue={user.bankBranch}
+                placeholder="ビジネス営業部"
+              />
+              <div className="space-y-2">
+                <Label htmlFor="bankAccountType">口座種別</Label>
+                <select
+                  id="bankAccountType"
+                  name="bankAccountType"
+                  defaultValue={user.bankAccountType ?? ""}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">選択してください</option>
+                  <option value="普通">普通</option>
+                  <option value="当座">当座</option>
+                </select>
+              </div>
+              <Field
+                id="bankAccountNumber"
+                label="口座番号"
+                defaultValue={user.bankAccountNumber}
+                placeholder="1234567"
+                inputMode="numeric"
+              />
+              <Field
+                id="bankAccountHolder"
+                label="口座名義"
+                defaultValue={user.bankAccountHolder}
+                placeholder="カ）サンプル"
+                className="sm:col-span-2"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -21,8 +21,11 @@ async function main() {
       companyTel: "03-1234-5678",
       companyEmail: "info@example.com",
       invoiceRegNo: "T1234567890123",
-      bankInfo:
-        "サンプル銀行 渋谷支店 普通 1234567\n口座名義 カ）サンプル",
+      bankName: "サンプル銀行",
+      bankBranch: "渋谷支店",
+      bankAccountType: "普通",
+      bankAccountNumber: "1234567",
+      bankAccountHolder: "カ）サンプル",
       sealText: "サンプル",
     },
   });

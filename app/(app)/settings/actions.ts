@@ -46,7 +46,13 @@ export async function updateCompanyAction(
       companyTel: str(formData.get("companyTel")),
       companyEmail: str(formData.get("companyEmail")),
       invoiceRegNo: str(formData.get("invoiceRegNo")),
-      bankInfo: str(formData.get("bankInfo")),
+      // 振込先（構造化フィールド）。旧 bankInfo は上書きせず、
+      // 構造化フィールド未入力時のフォールバックとして残す
+      bankName: str(formData.get("bankName")),
+      bankBranch: str(formData.get("bankBranch")),
+      bankAccountType: str(formData.get("bankAccountType")),
+      bankAccountNumber: str(formData.get("bankAccountNumber")),
+      bankAccountHolder: str(formData.get("bankAccountHolder")),
       sealText: str(formData.get("sealText")),
       sealImage,
     },

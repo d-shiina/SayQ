@@ -3,6 +3,7 @@ import {
   formatNumber,
   formatDateJa,
   formatBillingMonth,
+  formatBankInfo,
 } from "@/lib/utils";
 
 /** A4 @96dpi のピクセル寸法（プレビューのスケーリングにも使用） */
@@ -49,6 +50,11 @@ interface Company {
   companyTel: string | null;
   companyEmail: string | null;
   invoiceRegNo: string | null;
+  bankName: string | null;
+  bankBranch: string | null;
+  bankAccountType: string | null;
+  bankAccountNumber: string | null;
+  bankAccountHolder: string | null;
   bankInfo: string | null;
   sealText: string | null;
   sealImage: string | null;
@@ -73,6 +79,7 @@ export function InvoiceSheet({
     invoice.subject || `${formatBillingMonth(invoice.billingMonth)}分`;
   const hasReduced = invoice.items.some((it) => it.taxRate === 8);
   const emptyRows = Math.max(0, MIN_ITEM_ROWS - invoice.items.length);
+  const bankText = formatBankInfo(company);
 
   return (
     <div
@@ -194,7 +201,7 @@ export function InvoiceSheet({
       </div>
 
       {/* 入金期日 / 振込先 */}
-      {(invoice.dueDate || company.bankInfo) && (
+      {(invoice.dueDate || bankText) && (
         <div className="mt-3 w-[58%] overflow-hidden rounded-lg border border-slate-200">
           <table className="w-full">
             <thead>
@@ -209,7 +216,7 @@ export function InvoiceSheet({
                   {invoice.dueDate ? formatDateJa(invoice.dueDate) : ""}
                 </td>
                 <td className="whitespace-pre-wrap px-3 py-2 text-[11px] leading-snug text-slate-700">
-                  {company.bankInfo ?? ""}
+                  {bankText}
                 </td>
               </tr>
             </tbody>

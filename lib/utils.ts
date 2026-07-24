@@ -47,3 +47,45 @@ export function currentMonth(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
+
+export interface BankInfoParts {
+  bankName?: string | null;
+  bankBranch?: string | null;
+  bankAccountType?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountHolder?: string | null;
+  /** 旧フリーテキスト（構造化フィールド未入力時のフォールバック） */
+  bankInfo?: string | null;
+}
+
+/**
+ * 振込先の表示用テキストを組み立てる。
+ * 構造化フィールド（銀行名・支店名・種別・口座番号・名義）が1つでもあればそれを整形し、
+ * なければ旧フリーテキスト（bankInfo）にフォールバックする。
+ * 例: "PayPay銀行 ビジネス営業部 普通 6796051\n口座名義 カ）サンプル"
+ */
+export function formatBankInfo(parts: BankInfoParts): string {
+  const hasStructured =
+    parts.bankName ||
+    parts.bankBranch ||
+    parts.bankAccountType ||
+    parts.bankAccountNumber ||
+    parts.bankAccountHolder;
+
+  if (!hasStructured) return parts.bankInfo?.trim() ?? "";
+
+  const account = [
+    parts.bankName,
+    parts.bankBranch,
+    parts.bankAccountType,
+    parts.bankAccountNumber,
+  ]
+    .map((v) => v?.trim())
+    .filter(Boolean)
+    .join(" ");
+  const holder = parts.bankAccountHolder?.trim()
+    ? `口座名義 ${parts.bankAccountHolder.trim()}`
+    : "";
+
+  return [account, holder].filter(Boolean).join("\n");
+}
