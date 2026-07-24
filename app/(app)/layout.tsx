@@ -18,14 +18,14 @@ export default async function AppLayout({
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="no-print sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card/80 px-4 backdrop-blur md:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            {/* モバイルではサイドバーが無いためロゴを表示 */}
+          <div className="flex min-w-0 items-center gap-2">
+            {/* モバイルではサイドバーが無いためブランドを表示（デスクトップはサイドバー側に表示） */}
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground md:hidden">
               <FileText className="h-5 w-5" />
             </span>
-            <div className="truncate text-sm text-muted-foreground">
-              {user.companyName || user.name}
-            </div>
+            <span className="text-lg font-bold tracking-tight md:hidden">
+              SayQ
+            </span>
           </div>
           <UserMenu name={user.name} email={user.email} />
         </header>
