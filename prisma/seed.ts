@@ -56,7 +56,7 @@ async function main() {
     data: {
       userId: user.id,
       clientId: clientA.id,
-      invoiceNo: "202607-001",
+      invoiceNo: "INV-0000000001",
       title: "御請求書",
       subject: "2026年7月分 Webサイト保守運用業務",
       billingMonth: "2026-07",

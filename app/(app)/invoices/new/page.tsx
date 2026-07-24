@@ -20,7 +20,7 @@ export default async function NewInvoicePage() {
   });
 
   const billingMonth = currentMonth();
-  const invoiceNo = await suggestInvoiceNo(session.userId, billingMonth);
+  const invoiceNo = await suggestInvoiceNo(session.userId);
   const today = toDateInput(new Date());
 
   if (clients.length === 0) {

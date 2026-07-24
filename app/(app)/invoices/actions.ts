@@ -202,7 +202,7 @@ export async function duplicateInvoiceAction(formData: FormData) {
   });
   if (!src) return;
 
-  const newNo = await suggestInvoiceNo(session.userId, src.billingMonth);
+  const newNo = await suggestInvoiceNo(session.userId);
 
   const copy = await prisma.invoice.create({
     data: {
